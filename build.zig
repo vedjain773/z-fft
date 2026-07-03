@@ -20,6 +20,18 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    const bench_exe = b.addExecutable(.{
+        .name = "zig_fft_bench",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("bench/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "zig_fft", .module = mod },
+            },
+        }),
+    });
+    
     b.installArtifact(exe);
 
     const run_step = b.step("run", "Run the app");
@@ -46,4 +58,8 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run tests");
     test_step.dependOn(&run_mod_tests.step);
     test_step.dependOn(&run_exe_tests.step);
+
+    const run_bench = b.addRunArtifact(bench_exe);
+    const bench_step = b.step("bench", "Run benchmarks");
+    bench_step.dependOn(&run_bench.step);
 }
