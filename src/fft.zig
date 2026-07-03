@@ -14,23 +14,29 @@ pub fn fft(input: []Complex(f32), output: []Complex(f32), comptime size: usize) 
     } else {
         const next_size = size / 2; 
 
-        var even: [next_size] Complex(f32) = undefined;
-        var odd: [next_size] Complex(f32) = undefined;
+        var input_next: [next_size] Complex(f32) = undefined;
         var output_even: [next_size] Complex(f32) = undefined;
         var output_odd: [next_size] Complex(f32) = undefined;
         
         var counter: usize = 0;
         for (0..size) |i| {
             if (i % 2 == 0) {
-                even[counter] = input[i];
-                odd[counter] = input[i + 1];
-                
+                input_next[counter] = input[i];
                 counter += 1;
             }
         }
 
-        fft(&even, &output_even, next_size);
-        fft(&odd, &output_odd, next_size);
+        fft(&input_next, &output_even, next_size);
+
+        counter = 0;
+        for (0..size) |i| {
+            if (i % 2 != 0) {
+                input_next[counter] = input[i];
+                counter += 1;
+            }
+        }
+        
+        fft(&input_next, &output_odd, next_size);
 
         const size_f: f32 = @floatFromInt(size);
         
