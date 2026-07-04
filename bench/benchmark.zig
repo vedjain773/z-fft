@@ -14,21 +14,24 @@ pub fn benchmark(io: std.Io, comptime size: usize) void {
 
     var output_dft: [size] Complex(f32) = undefined;
     
-    var start = benchtime(io).toNanoseconds();
+    var start = benchtime(io).toMicroseconds();
     dft(&input, &output_dft);
-    var end = benchtime(io).toNanoseconds();
+    var end = benchtime(io).toMicroseconds();
 
     const dft_time_in_s = (end - start);
    
     var output_fft: [size] Complex(f32) = undefined;
     
-    start = benchtime(io).toNanoseconds();
+    start = benchtime(io).toMicroseconds();
     fft(@constCast(&input), &output_fft, size);
-    end = benchtime(io).toNanoseconds();
+    end = benchtime(io).toMicroseconds();
 
     const fft_time_in_s = (end - start);
+
+    const gain = @divTrunc(dft_time_in_s, fft_time_in_s);
     
-    std.debug.print("Size: {}    DFT: {}    FFT: {}\n", .{size, dft_time_in_s, fft_time_in_s});
+    std.debug.print("Size: {}    DFT: {}    FFT: {}    Gain: {}\n",
+        .{size, dft_time_in_s, fft_time_in_s, gain});
 }
 
 fn benchtime(io: std.Io) std.Io.Timestamp {

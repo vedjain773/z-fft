@@ -4,56 +4,57 @@ const assert = std.debug.assert;
 
 const cis = @import("complex.zig").cis;
 const dft = @import("dft.zig").dft;
+const FFTError = @import("fft.zig").FFTError;
 
-pub fn fft(input: []Complex(f32), output: []Complex(f32), comptime size: usize) void {
-    assert(input.len == size);
-    assert(output.len == size);
-    
-    if (size == 1) {
-        output[0] = input[0];
-    } else {
-        const next_size = size / 2; 
+pub fn ifft(input: []const Complex(f32), output: []Complex(f32)) void {
+    bitReverse(input, output);
 
-        var input_next: [next_size] Complex(f32) = undefined;
-        var output_even: [next_size] Complex(f32) = undefined;
-        var output_odd: [next_size] Complex(f32) = undefined;
+    const num_of_stages: usize = std.math.log2(input.len);
+
+    var gap: u32 = 1;
+
+    for (0..num_of_stages) |i| {
+        var curr_index: usize = 0;
+        while (curr_index + gap < input.len) {
+            var j: usize = 0;
         
-        var counter: usize = 0;
-        for (0..size) |i| {
-            if (i % 2 == 0) {
-                input_next[counter] = input[i];
-                counter += 1;
+            while (j < gap) : (j += 1) {
+                const even = output[curr_index + j];
+                const odd = output[curr_index + j + gap];
+
+                const k_f: f32 = @floatFromInt(j);
+                const power: f32 = @floatFromInt(i + 1);
+                const denom = std.math.exp2(power);
+                const factor = cis(-2 * std.math.pi * k_f / denom);
+                const term_2 = factor.mul(odd);
+
+                output[curr_index + j] = even.add(term_2);
+                output[curr_index + j + gap] = even.add(term_2.neg());
             }
+
+            curr_index += gap * 2;
         }
 
-        fft(&input_next, &output_even, next_size);
-
-        counter = 0;
-        for (0..size) |i| {
-            if (i % 2 != 0) {
-                input_next[counter] = input[i];
-                counter += 1;
-            }
-        }
-        
-        fft(&input_next, &output_odd, next_size);
-
-        const size_f: f32 = @floatFromInt(size);
-        
-        for (0..next_size) |k| {
-            const k_f: f32 = @floatFromInt(k);
-            const factor = cis(-2 * std.math.pi * k_f / size_f);
-            const term_2 = factor.mul(output_odd[k]);
-
-            output[k] = output_even[k].add(term_2);
-            output[k + next_size] = output_even[k].add(term_2.neg());
-        }
-    } 
+        gap *= 2;
+    }
 }
 
-pub const FFTError = error {
-    OutputMismatch,
-};
+fn bitReverse(input: []const Complex(f32), output: []Complex(f32)) void {
+    const num_of_bits: usize = std.math.log2(input.len);
+    
+    for (0..input.len) |i| {
+        var index = i;
+        var new_index: usize = 0;
+        
+        for (0..num_of_bits) |_| {
+            new_index <<= 1;
+            new_index += index % 2;
+            index >>= 1;
+        }
+
+        output[new_index] = input[i];
+    }
+}
 
 fn expectEqualComplex(a: Complex(f32), b: Complex(f32), epsilon: f32) !void {
     const real: bool = @abs(a.re - b.re) < epsilon;
@@ -76,7 +77,7 @@ test "zero signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    fft(@constCast(&input), &output_fft, 4);
+    ifft(&input, &output_fft);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
@@ -95,7 +96,7 @@ test "impulse signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    fft(@constCast(&input), &output_fft, 4);
+    ifft(&input, &output_fft);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
@@ -114,8 +115,8 @@ test "const signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    fft(@constCast(&input), &output_fft, 4);
-
+    ifft(&input, &output_fft);
+    
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
     } 
@@ -133,7 +134,7 @@ test "random signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    fft(@constCast(&input), &output_fft, 4);
+    ifft(&input, &output_fft);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
