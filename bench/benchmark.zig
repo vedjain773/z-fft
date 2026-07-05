@@ -4,13 +4,16 @@ const Complex = std.math.complex.Complex;
 
 const zig_fft = @import("zig_fft");
 const dft = zig_fft.dft;
-const fft = zig_fft.fft;
-const ifft = zig_fft.ifft;
+const rfft = zig_fft.rFFTconf;
+const ifft = zig_fft.iFFTconf;
 
-pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32) void {
-    const curr_seed: u64 = 1;
+pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32) !void {
+    const curr_seed: u64 = 5768;
     var r = random.Xoshiro256.init(curr_seed);
-    
+   
+    var config = try zig_fft.ZConfig.init(std.heap.smp_allocator, size);
+    defer config.deinit();
+
     var output_dft: [size] Complex(f32) = undefined;
     var output_fft: [size] Complex(f32) = undefined;
     var output_ifft: [size] Complex(f32) = undefined;
@@ -19,8 +22,6 @@ pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32
     var fft_time_in_s: i64 = 0;
     var ifft_time_in_s: i64 = 0;
     
-    const table = zig_fft.getTwiddleTable(size);
-
     for (0..num_bench_marks) |_| {
         const input = randomArr(r.random(), size);
 
@@ -32,14 +33,14 @@ pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32
         dft_time_in_s += (start - end);
 
         start = benchtime(io).toMicroseconds();
-        fft(@constCast(&input), &output_fft, size, size, @constCast(&table));
+        rfft(@constCast(&input), &output_fft, &config, size);
         std.mem.doNotOptimizeAway(&output_fft);
         end = benchtime(io).toMicroseconds();
 
         fft_time_in_s += (start - end);
 
         start = benchtime(io).toMicroseconds();
-        ifft(&input, &output_ifft, @constCast(&table));
+        ifft(&input, &output_ifft, &config);
         std.mem.doNotOptimizeAway(&output_ifft);
         end = benchtime(io).toMicroseconds();
 

@@ -5,6 +5,14 @@ const assert = std.debug.assert;
 const cis = @import("complex.zig").cis;
 const getTwiddleTable = @import("complex.zig").getTwiddleTable;
 const dft = @import("dft.zig").dft;
+const ZConfig = @import("config.zig").ZConfig;
+
+pub fn rFFTconf(input: []Complex(f32), output: []Complex(f32),
+    config: *ZConfig, comptime size: usize) void {
+    
+    const table = config.*.twiddle_table;
+    fft(input, output, size, size, @constCast(table));
+}
 
 pub fn recursiveFFT(input: []Complex(f32), output: []Complex(f32),
     comptime size: usize) void {
@@ -13,7 +21,7 @@ pub fn recursiveFFT(input: []Complex(f32), output: []Complex(f32),
     fft(input, output, size, size, &table);
 }
 
-pub fn fft(input: []Complex(f32), output: []Complex(f32),
+fn fft(input: []Complex(f32), output: []Complex(f32),
     comptime size: usize, original_size: usize, twiddle_table: []Complex(f32)) void {
     
     assert(input.len == size);
