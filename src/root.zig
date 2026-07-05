@@ -7,3 +7,5 @@ pub const recursiveFFT = @import("fft.zig").recursiveFFT;
 pub const ifft = @import("ifft.zig").ifft;
 pub const iterativeFFT = @import("ifft.zig").iterativeFFT;
 pub const getTwiddleTable = @import("complex.zig").getTwiddleTable;
+
+pub const ZConfig = @import("config.zig").ZConfig;
