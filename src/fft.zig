@@ -7,13 +7,6 @@ const getTwiddleTable = @import("complex.zig").getTwiddleTable;
 const dft = @import("dft.zig").dft;
 const ZConfig = @import("config.zig").ZConfig;
 
-pub fn rFFTconf(input: []Complex(f32), output: []Complex(f32),
-    config: *ZConfig, comptime size: usize) void {
-    
-    const table = config.*.twiddle_table;
-    fft(input, output, size, size, @constCast(table));
-}
-
 pub fn recursiveFFT(input: []Complex(f32), output: []Complex(f32),
     comptime size: usize) void {
     
@@ -21,12 +14,15 @@ pub fn recursiveFFT(input: []Complex(f32), output: []Complex(f32),
     fft(input, output, size, size, &table);
 }
 
-fn fft(input: []Complex(f32), output: []Complex(f32),
-    comptime size: usize, original_size: usize, twiddle_table: []Complex(f32)) void {
+pub fn fft(input: []Complex(f32), output: []Complex(f32),
+    config: *ZConfig, comptime size: usize) void {
     
     assert(input.len == size);
     assert(output.len == size);
-    
+   
+    const twiddle_table = config.*.twiddle_table;
+    const original_size = config.*.size;
+
     if (size == 1) {
         output[0] = input[0];
     } else {
@@ -44,7 +40,7 @@ fn fft(input: []Complex(f32), output: []Complex(f32),
             }
         }
 
-        fft(&input_next, &output_even, next_size, original_size, twiddle_table);
+        fft(&input_next, &output_even, config, next_size);
 
         counter = 0;
         for (0..size) |i| {
@@ -54,7 +50,7 @@ fn fft(input: []Complex(f32), output: []Complex(f32),
             }
         }
         
-        fft(&input_next, &output_odd, next_size, original_size, twiddle_table);
+        fft(&input_next, &output_odd, config, next_size);
 
         for (0..next_size) |k| {
             const factor = twiddle_table[k * original_size / size];
