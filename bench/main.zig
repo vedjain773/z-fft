@@ -8,6 +8,6 @@ pub fn main(init: std.process.Init) !void {
     comptime var size = 8;
 
     inline while (size <= 4096) : (size *= 2) {
-        benchmark(io, size);
+        benchmark(io, size, 10);
     }  
 }

@@ -7,36 +7,44 @@ const dft = zig_fft.dft;
 const fft = zig_fft.fft;
 const ifft = zig_fft.ifft;
 
-pub fn benchmark(io: std.Io, comptime size: usize) void {
+pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32) void {
     const curr_seed: u64 = 1;
     var r = random.Xoshiro256.init(curr_seed);
-
+    
     const input = randomArr(r.random(), size);
 
     var output_dft: [size] Complex(f32) = undefined;
-    
-    var start = benchtime(io).toMicroseconds();
-    dft(&input, &output_dft);
-    var end = benchtime(io).toMicroseconds();
-
-    const dft_time_in_s = (end - start);
-   
     var output_fft: [size] Complex(f32) = undefined;
-    
-    start = benchtime(io).toMicroseconds();
-    fft(@constCast(&input), &output_fft, size);
-    end = benchtime(io).toMicroseconds();
-
-    const fft_time_in_s = (end - start);
-   
     var output_ifft: [size] Complex(f32) = undefined;
+
+    var dft_time_in_s: i64 = 0;
+    var fft_time_in_s: i64 = 0;
+    var ifft_time_in_s: i64 = 0;
     
-    start = benchtime(io).toMicroseconds();
-    ifft(&input, &output_ifft);
-    end = benchtime(io).toMicroseconds();
+    for (0..num_bench_marks) |_| {
+        var start = benchtime(io).toMicroseconds();
+        dft(&input, &output_dft);
+        var end = benchtime(io).toMicroseconds();
+        
+        dft_time_in_s += (start - end);
 
-    const ifft_time_in_s = (end - start);
+        start = benchtime(io).toMicroseconds();
+        fft(@constCast(&input), &output_fft, size);
+        end = benchtime(io).toMicroseconds();
 
+        fft_time_in_s += (start - end);
+
+        start = benchtime(io).toMicroseconds();
+        ifft(&input, &output_ifft);
+        end = benchtime(io).toMicroseconds();
+
+        ifft_time_in_s += (start - end);
+    }
+
+    dft_time_in_s = -1 * @divTrunc(dft_time_in_s, num_bench_marks);
+    fft_time_in_s = -1 * @divTrunc(fft_time_in_s, num_bench_marks);
+    ifft_time_in_s = -1 * @divTrunc(ifft_time_in_s, num_bench_marks);
+   
     std.debug.print("Size: {}    DFT: {}    FFT: {}    IFFT: {}\n",
         .{size, dft_time_in_s, fft_time_in_s, ifft_time_in_s});
 }

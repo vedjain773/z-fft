@@ -13,18 +13,17 @@ pub fn ifft(input: []const Complex(f32), output: []Complex(f32)) void {
 
     var gap: u32 = 1;
 
-    for (0..num_of_stages) |i| {
+    for (0..num_of_stages) |_| {
         var curr_index: usize = 0;
         while (curr_index + gap < input.len) {
             var j: usize = 0;
-        
+            const denom: f32 = @floatFromInt(gap * 2);
+            
             while (j < gap) : (j += 1) {
                 const even = output[curr_index + j];
                 const odd = output[curr_index + j + gap];
 
                 const k_f: f32 = @floatFromInt(j);
-                const power: f32 = @floatFromInt(i + 1);
-                const denom = std.math.exp2(power);
                 const factor = cis(-2 * std.math.pi * k_f / denom);
                 const term_2 = factor.mul(odd);
 
