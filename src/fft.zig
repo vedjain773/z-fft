@@ -3,9 +3,19 @@ const Complex = std.math.complex.Complex;
 const assert = std.debug.assert;
 
 const cis = @import("complex.zig").cis;
+const getTwiddleTable = @import("complex.zig").getTwiddleTable;
 const dft = @import("dft.zig").dft;
 
-pub fn fft(input: []Complex(f32), output: []Complex(f32), comptime size: usize) void {
+pub fn recursiveFFT(input: []Complex(f32), output: []Complex(f32),
+    comptime size: usize) void {
+    
+    var table = getTwiddleTable(size);
+    fft(input, output, size, size, &table);
+}
+
+pub fn fft(input: []Complex(f32), output: []Complex(f32),
+    comptime size: usize, original_size: usize, twiddle_table: []Complex(f32)) void {
+    
     assert(input.len == size);
     assert(output.len == size);
     
@@ -26,7 +36,7 @@ pub fn fft(input: []Complex(f32), output: []Complex(f32), comptime size: usize) 
             }
         }
 
-        fft(&input_next, &output_even, next_size);
+        fft(&input_next, &output_even, next_size, original_size, twiddle_table);
 
         counter = 0;
         for (0..size) |i| {
@@ -36,13 +46,10 @@ pub fn fft(input: []Complex(f32), output: []Complex(f32), comptime size: usize) 
             }
         }
         
-        fft(&input_next, &output_odd, next_size);
+        fft(&input_next, &output_odd, next_size, original_size, twiddle_table);
 
-        const size_f: f32 = @floatFromInt(size);
-        
         for (0..next_size) |k| {
-            const k_f: f32 = @floatFromInt(k);
-            const factor = cis(-2 * std.math.pi * k_f / size_f);
+            const factor = twiddle_table[k * original_size / size];
             const term_2 = factor.mul(output_odd[k]);
 
             output[k] = output_even[k].add(term_2);
@@ -76,7 +83,7 @@ test "zero signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    fft(@constCast(&input), &output_fft, 4);
+    recursiveFFT(@constCast(&input), &output_fft, 4);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
@@ -95,7 +102,7 @@ test "impulse signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    fft(@constCast(&input), &output_fft, 4);
+    recursiveFFT(@constCast(&input), &output_fft, 4);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
@@ -114,7 +121,7 @@ test "const signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    fft(@constCast(&input), &output_fft, 4);
+    recursiveFFT(@constCast(&input), &output_fft, 4);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
@@ -133,7 +140,7 @@ test "random signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    fft(@constCast(&input), &output_fft, 4);
+    recursiveFFT(@constCast(&input), &output_fft, 4);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);

@@ -32,7 +32,7 @@ pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32
         dft_time_in_s += (start - end);
 
         start = benchtime(io).toMicroseconds();
-        fft(@constCast(&input), &output_fft, size);
+        fft(@constCast(&input), &output_fft, size, size, @constCast(&table));
         std.mem.doNotOptimizeAway(&output_fft);
         end = benchtime(io).toMicroseconds();
 

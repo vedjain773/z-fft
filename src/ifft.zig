@@ -82,10 +82,8 @@ test "zero signal" {
     var output_dft: [4]Complex(f32) = undefined;
     var output_fft: [4]Complex(f32) = undefined;
     
-    const table = getTwiddleTable(4);
-    
     dft(&input, &output_dft);
-    ifft(&input, &output_fft, @constCast(&table));
+    iterativeFFT(&input, &output_fft, 4);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
@@ -103,11 +101,9 @@ test "impulse signal" {
     var output_dft: [4]Complex(f32) = undefined;
     var output_fft: [4]Complex(f32) = undefined;
     
-    const table = getTwiddleTable(4);
-    
     dft(&input, &output_dft);
-    ifft(&input, &output_fft, @constCast(&table));
-
+    iterativeFFT(&input, &output_fft, 4);
+    
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
     } 
@@ -124,10 +120,8 @@ test "const signal" {
     var output_dft: [4]Complex(f32) = undefined;
     var output_fft: [4]Complex(f32) = undefined;
     
-    const table = getTwiddleTable(4);
-    
     dft(&input, &output_dft);
-    ifft(&input, &output_fft, @constCast(&table));
+    iterativeFFT(&input, &output_fft, 4);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
@@ -145,10 +139,8 @@ test "random signal" {
     var output_dft: [4]Complex(f32) = undefined;
     var output_fft: [4]Complex(f32) = undefined;
     
-    const table = getTwiddleTable(4);
-    
     dft(&input, &output_dft);
-    ifft(&input, &output_fft, @constCast(&table));
+    iterativeFFT(&input, &output_fft, 4);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
