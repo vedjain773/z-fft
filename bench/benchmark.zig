@@ -21,6 +21,8 @@ pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32
     var fft_time_in_s: i64 = 0;
     var ifft_time_in_s: i64 = 0;
     
+    const table = zig_fft.getTwiddleTable(size);
+
     for (0..num_bench_marks) |_| {
         var start = benchtime(io).toMicroseconds();
         dft(&input, &output_dft);
@@ -35,7 +37,7 @@ pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32
         fft_time_in_s += (start - end);
 
         start = benchtime(io).toMicroseconds();
-        ifft(&input, &output_ifft);
+        ifft(&input, &output_ifft, @constCast(&table));
         end = benchtime(io).toMicroseconds();
 
         ifft_time_in_s += (start - end);

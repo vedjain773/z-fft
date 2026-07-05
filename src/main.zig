@@ -12,9 +12,10 @@ pub fn main() !void {
         .{.re = 1, .im = 0}
     };
 
-    var output: [4]Complex(f32) = undefined;
-   
-    ifft(&input, &output);
+    var output: [4]Complex(f32) = undefined; 
+    var table = zig_fft.getTwiddleTable(4);
+    
+    ifft(&input, &output, &table);
 
     for (0..input.len) |k| {
         std.debug.print("{} + {}i\n", .{output[k].re, output[k].im});
