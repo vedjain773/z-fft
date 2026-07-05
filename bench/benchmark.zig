@@ -11,8 +11,6 @@ pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32
     const curr_seed: u64 = 1;
     var r = random.Xoshiro256.init(curr_seed);
     
-    const input = randomArr(r.random(), size);
-
     var output_dft: [size] Complex(f32) = undefined;
     var output_fft: [size] Complex(f32) = undefined;
     var output_ifft: [size] Complex(f32) = undefined;
@@ -24,20 +22,26 @@ pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32
     const table = zig_fft.getTwiddleTable(size);
 
     for (0..num_bench_marks) |_| {
+        
+        const input = randomArr(r.random(), size);
+
         var start = benchtime(io).toMicroseconds();
         dft(&input, &output_dft);
+        std.mem.doNotOptimizeAway(&output_dft);
         var end = benchtime(io).toMicroseconds();
         
         dft_time_in_s += (start - end);
 
         start = benchtime(io).toMicroseconds();
         fft(@constCast(&input), &output_fft, size);
+        std.mem.doNotOptimizeAway(&output_fft);
         end = benchtime(io).toMicroseconds();
 
         fft_time_in_s += (start - end);
 
         start = benchtime(io).toMicroseconds();
         ifft(&input, &output_ifft, @constCast(&table));
+        std.mem.doNotOptimizeAway(&output_ifft);
         end = benchtime(io).toMicroseconds();
 
         ifft_time_in_s += (start - end);
