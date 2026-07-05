@@ -2,7 +2,7 @@ const std = @import("std");
 const Complex = std.math.complex.Complex;
 
 const zig_fft = @import("zig_fft");
-const ifft = zig_fft.ifft;
+const ifft = zig_fft.iterativeFFT;
 
 pub fn main() !void {
     const input = [_]Complex(f32) {
@@ -13,9 +13,8 @@ pub fn main() !void {
     };
 
     var output: [4]Complex(f32) = undefined; 
-    var table = zig_fft.getTwiddleTable(4);
     
-    ifft(&input, &output, &table);
+    ifft(&input, &output, 4);
 
     for (0..input.len) |k| {
         std.debug.print("{} + {}i\n", .{output[k].re, output[k].im});

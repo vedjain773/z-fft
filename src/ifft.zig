@@ -7,6 +7,12 @@ const getTwiddleTable = @import("complex.zig").getTwiddleTable;
 const dft = @import("dft.zig").dft;
 const FFTError = @import("fft.zig").FFTError;
 
+pub fn iterativeFFT(input: []const Complex(f32), output: []Complex(f32),
+    comptime size: usize) void {
+    var table = getTwiddleTable(size);
+    ifft(input, output, &table);
+}
+
 pub fn ifft(input: []const Complex(f32), output: []Complex(f32),
     twiddle_table: []Complex(f32)) void {
    

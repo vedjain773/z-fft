@@ -22,7 +22,6 @@ pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32
     const table = zig_fft.getTwiddleTable(size);
 
     for (0..num_bench_marks) |_| {
-        
         const input = randomArr(r.random(), size);
 
         var start = benchtime(io).toMicroseconds();
