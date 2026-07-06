@@ -3,19 +3,19 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    const mod = b.addModule("zig_fft", .{
+    const mod = b.addModule("z-fft", .{
         .root_source_file = b.path("src/root.zig"),
         .target = target,
     });
 
     const exe = b.addExecutable(.{
-        .name = "zig_fft",
+        .name = "z-fft",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
-                .{ .name = "zig_fft", .module = mod },
+                .{ .name = "z-fft", .module = mod },
             },
         }),
     });
@@ -27,12 +27,13 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .imports = &.{
-                .{ .name = "zig_fft", .module = mod },
+                .{ .name = "z-fft", .module = mod },
             },
         }),
     });
     
     b.installArtifact(exe);
+    b.installArtifact(bench_exe);
 
     const run_step = b.step("run", "Run the app");
 

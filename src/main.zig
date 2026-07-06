@@ -1,7 +1,7 @@
 const std = @import("std");
 const Complex = std.math.complex.Complex;
 
-const zig_fft = @import("zig_fft");
+const zig_fft = @import("z-fft");
 
 pub fn main() !void {
     var config = try zig_fft.ZConfig.init(std.heap.smp_allocator, 4);

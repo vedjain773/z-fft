@@ -1,7 +1,7 @@
 .{
-    .name = .zig_fft,
+    .name = .z_fft,
     .version = "0.0.0",
-    .fingerprint = 0x6a6674b62d45f66d, // Changing this has security and trust implications.
+    .fingerprint = 0xcebbde11bd7fb4c2, // Changing this has security and trust implications.
     .minimum_zig_version = "0.17.0-dev.1099+7db2ef610",
     .dependencies = .{
         // See `zig fetch --save <url>` for a command-line interface for adding dependencies.
