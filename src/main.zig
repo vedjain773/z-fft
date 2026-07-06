@@ -16,9 +16,17 @@ pub fn main() !void {
 
     var output: [4]Complex(f32) = undefined; 
    
-    zig_fft.rFFTconf(@constCast(&input), &output, &config, 4);
+    zig_fft.iFFTconf(&input, &output, &config);
 
     for (0..input.len) |k| {
         std.debug.print("{} + {}i\n", .{output[k].re, output[k].im});
+    }
+    
+    var inv_output: [4]Complex(f32) = undefined; 
+
+    zig_fft.invIterFFT(&output, &inv_output, 4);
+
+    for (0..input.len) |k| {
+        std.debug.print("{} + {}i\n", .{inv_output[k].re, inv_output[k].im});
     }
 }

@@ -51,7 +51,8 @@ pub fn benchmark(io: std.Io, comptime size: usize, comptime num_bench_marks: u32
     fft_time_in_s = -1 * @divTrunc(fft_time_in_s, num_bench_marks);
     ifft_time_in_s = -1 * @divTrunc(ifft_time_in_s, num_bench_marks);
    
-    std.debug.print("Size: {}    DFT: {}    FFT: {}    IFFT: {}\n",
+
+    std.debug.print("{d:<8} {d:<12} {d:<12} {d:<12}\n",
         .{size, dft_time_in_s, fft_time_in_s, ifft_time_in_s});
 }
 

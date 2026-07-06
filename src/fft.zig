@@ -8,10 +8,12 @@ const dft = @import("dft.zig").dft;
 const ZConfig = @import("config.zig").ZConfig;
 
 pub fn recursiveFFT(input: []Complex(f32), output: []Complex(f32),
-    comptime size: usize) void {
-    
-    var table = getTwiddleTable(size);
-    fft(input, output, size, size, &table);
+    comptime size: usize) !void {
+   
+    var config = try ZConfig.init(std.heap.smp_allocator, size);
+    defer config.deinit();
+
+    fft(input, output, &config, size);
 }
 
 pub fn fft(input: []Complex(f32), output: []Complex(f32),
@@ -62,6 +64,23 @@ pub fn fft(input: []Complex(f32), output: []Complex(f32),
     } 
 }
 
+pub fn invRecFFT(input: []Complex(f32), output: []Complex(f32),
+    comptime size: usize) !void {
+    
+    for (0..input.len) |i| {
+        input[i] = input[i].conjugate();
+    }
+
+    try recursiveFFT(input, output, size);
+
+    for (0..output.len) |i| {
+        output[i] = output[i].conjugate();
+
+        output[i].re /= size;
+        output[i].im /= size;
+    }
+}
+
 pub const FFTError = error {
     OutputMismatch,
 };
@@ -87,7 +106,7 @@ test "zero signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    recursiveFFT(@constCast(&input), &output_fft, 4);
+    try recursiveFFT(@constCast(&input), &output_fft, 4);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
@@ -106,7 +125,7 @@ test "impulse signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    recursiveFFT(@constCast(&input), &output_fft, 4);
+    try recursiveFFT(@constCast(&input), &output_fft, 4);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
@@ -125,7 +144,7 @@ test "const signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    recursiveFFT(@constCast(&input), &output_fft, 4);
+    try recursiveFFT(@constCast(&input), &output_fft, 4);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);
@@ -144,7 +163,7 @@ test "random signal" {
     var output_fft: [4]Complex(f32) = undefined;
     
     dft(&input, &output_dft);
-    recursiveFFT(@constCast(&input), &output_fft, 4);
+    try recursiveFFT(@constCast(&input), &output_fft, 4);
 
     for (0..input.len) |i| {
         try expectEqualComplex(output_dft[i], output_fft[i], 0.0001);

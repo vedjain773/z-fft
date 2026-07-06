@@ -71,6 +71,24 @@ fn bitReverse(input: []const Complex(f32), output: []Complex(f32)) void {
     }
 }
 
+pub fn invIterFFT(input: []Complex(f32), output: []Complex(f32),
+    comptime size: usize) void {
+    
+    for (0..input.len) |i| {
+        input[i] = input[i].conjugate();
+    }
+
+    iterativeFFT(input, output, size);
+
+    for (0..output.len) |i| {
+        output[i] = output[i].conjugate();
+
+        output[i].re /= size;
+        output[i].im /= size;
+    }
+
+}
+
 fn expectEqualComplex(a: Complex(f32), b: Complex(f32), epsilon: f32) !void {
     const real: bool = @abs(a.re - b.re) < epsilon;
     const imag: bool = @abs(a.im - b.im) < epsilon;
