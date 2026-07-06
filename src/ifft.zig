@@ -12,21 +12,23 @@ pub fn iFFTconf(input: []const Complex(f32), output: []Complex(f32),
     config: *ZConfig) void {
     
     const table = config.*.twiddle_table;
-    ifft(input, output, @constCast(table));
+    const bit_perm = config.*.bit_perm;
+    ifft(input, output, @constCast(table), bit_perm);
 }
 
 pub fn iterativeFFT(input: []const Complex(f32), output: []Complex(f32),
     comptime size: usize) void {
     
     var table = getTwiddleTable(size);
-    ifft(input, output, &table);
+    var bit_perm = bitReversePerm(size); 
+    ifft(input, output, &table, &bit_perm);
 }
 
 fn ifft(input: []const Complex(f32), output: []Complex(f32),
-    twiddle_table: []Complex(f32)) void {
+    twiddle_table: []Complex(f32), bit_perm: []usize) void {
    
     const input_size = input.len;
-    bitReverse(input, output);
+    bitReverseSwaps(input, output, bit_perm);
 
     const num_of_stages: usize = std.math.log2(input.len);
     var gap: u32 = 1;
@@ -54,10 +56,12 @@ fn ifft(input: []const Complex(f32), output: []Complex(f32),
     }
 }
 
-fn bitReverse(input: []const Complex(f32), output: []Complex(f32)) void {
-    const num_of_bits: usize = std.math.log2(input.len);
+fn bitReversePerm(comptime size: usize) [size]usize {
+    var perms: [size]usize = undefined; 
     
-    for (0..input.len) |i| {
+    const num_of_bits: usize = std.math.log2(size);
+    
+    for (0..size) |i| {
         var index = i;
         var new_index: usize = 0;
         
@@ -67,6 +71,17 @@ fn bitReverse(input: []const Complex(f32), output: []Complex(f32)) void {
             index >>= 1;
         }
 
+        perms[i] = new_index;
+    }
+
+    return perms;
+}
+
+fn bitReverseSwaps(input: []const Complex(f32), output: []Complex(f32),
+    bit_perms: []usize) void {
+    
+    for (0..input.len) |i| {
+        const new_index: usize = bit_perms[i];
         output[new_index] = input[i];
     }
 }
