@@ -4,8 +4,6 @@ A fast, lightweight Fast Fourier Transform (FFT) library written in Zig.
 
 The library provides efficient implementations of the Discrete Fourier Transform (DFT) and Fast Fourier Transform (FFT), with an emphasis on simplicity.
 
-> **Status:** Under active development.
-
 ## Features
 
 * Radix-2 Cooley–Tukey FFT
@@ -28,6 +26,8 @@ Then add it as a dependency in your `build.zig`.
 ## Usage
 
 ```zig
+const zig_fft = @import("z-fft");
+
 var config = try zig_fft.ZConfig.init(std.heap.smp_allocator, 4);
 defer config.deinit();
 
