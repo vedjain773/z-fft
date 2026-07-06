@@ -15,5 +15,5 @@ pub fn main(init: std.process.Init) !void {
         try benchmark(io, size, 10);
     } 
 
-    try benchTest(io, 1024, 100);
+    try benchTest(io, 1024, 10000);
 }
