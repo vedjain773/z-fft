@@ -1,4 +1,4 @@
-# fft-zig
+# z-fft
 
 A fast, lightweight Fast Fourier Transform (FFT) library written in Zig.
 
@@ -81,6 +81,16 @@ Benchmarks can be run with:
 ```sh
 zig build benchmark
 ```
+
+![benchmark](assets/benchmark.svg)
+
+The benchmarks were run on:
+- CPU: AMD A6
+- Zig: 0.17 (dev) (ReleaseFast)
+- OS: Ubuntu 22.04
+
+Additionally, z-fft was able to compute the Fast Fourier Transform of 10,000
+1024-pt buffers in 0.18s
 
 ## Building
 
