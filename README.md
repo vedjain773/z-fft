@@ -79,7 +79,7 @@ Benchmarking utilities are included to compare:
 Benchmarks can be run with:
 
 ```sh
-zig build benchmark
+zig build bench
 ```
 
 ![benchmark](assets/benchmark.svg)
