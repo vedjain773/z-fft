@@ -85,9 +85,11 @@ zig build benchmark
 ![benchmark](assets/benchmark.svg)
 
 The benchmarks were run on:
-- CPU: AMD A6
-- Zig: 0.17 (dev) (ReleaseFast)
-- OS: Ubuntu 22.04
+```
+CPU: AMD A6
+Zig: 0.17 (dev) (ReleaseFast)
+OS: Ubuntu 22.04
+```
 
 Additionally, z-fft was able to compute the Fast Fourier Transform of 10,000
 1024-pt buffers in 0.18s
@@ -103,11 +105,11 @@ zig build
 Run tests:
 
 ```sh
-zig build test
+zig test src/ifft.zig
 ```
 
 Run benchmarks:
 
 ```sh
-zig build benchmark
+zig build bench
 ```
